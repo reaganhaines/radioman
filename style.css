@@ -1,0 +1,154 @@
+body {
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    background-color: #f7f7f7;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    max-width: 1200px;
+    margin: 40px auto 0 auto;
+    padding: 0 20px;
+}
+.session-title {
+    font-size: 2rem;
+    margin-bottom: 32px;
+}
+.main-grid {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+}
+.panel {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    padding: 24px;
+    min-width: 260px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.panel-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 18px;
+}
+/* Audio Buffer */
+.audio-buffer {
+    display: flex;
+    gap: 10px;
+}
+.audio-bar {
+    width: 32px;
+    height: 32px;
+    background: #e6f4f1;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.audio-bar svg {
+    width: 20px;
+    height: 20px;
+}
+/* Conversation */
+.conversation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.message {
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+.message.user {
+    background: #e6f7e6;
+    align-items: flex-start;
+}
+.message.assistant {
+    background: #ece6fa;
+    align-items: flex-start;
+}
+.message-header {
+    font-weight: bold;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.98rem;
+}
+.message-audio {
+    margin-bottom: 6px;
+}
+.message-text {
+    font-style: italic;
+    color: #444;
+    font-size: 1rem;
+}
+/* Responses */
+.responses-list {
+    margin-top: 10px;
+}
+.response-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.98rem;
+}
+.response-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+.response-dot.audio {
+    background: #5e9cff;
+}
+.response-dot.audio_transcript {
+    background: #a259ff;
+}
+/* Controls */
+.controls-container {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 32px;
+    display: flex;
+    justify-content: center;
+    z-index: 10;
+}
+.controls {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 16px 32px;
+    display: flex;
+    gap: 32px;
+}
+.control-btn {
+    background: #f0f0f0;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.control-btn:hover {
+    background: #e0e0e0;
+}
+@media (max-width: 900px) {
+    .main-grid {
+        flex-direction: column;
+        gap: 24px;
+    }
+    .panel {
+        min-width: 0;
+    }
+}
