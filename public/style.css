@@ -3,11 +3,17 @@ body {
     background-color: #f7f7f7;
     margin: 0;
     padding: 0;
+    height: 90vh;
+    display: flex;
 }
 .container {
     max-width: 1200px;
     margin: 40px auto 0 auto;
     padding: 0 20px;
+    flex-direction: column;
+    display:flex;
+    flex: 1;
+    height: calc(100vh - 180px);
 }
 .session-title {
     font-size: 2rem;
@@ -17,6 +23,7 @@ body {
     display: flex;
     gap: 32px;
     justify-content: center;
+    height:100%;
 }
 .panel {
     background: #fff;
@@ -33,26 +40,10 @@ body {
     font-weight: bold;
     margin-bottom: 18px;
 }
-/* Audio Buffer */
-.audio-buffer {
-    display: flex;
-    gap: 10px;
-}
-.audio-bar {
-    width: 32px;
-    height: 32px;
-    background: #e6f4f1;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.audio-bar svg {
-    width: 20px;
-    height: 20px;
-}
 /* Conversation */
 .conversation-list {
+    flex: 1 1 0;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -71,7 +62,7 @@ body {
 }
 .message.assistant {
     background: #ece6fa;
-    align-items: flex-start;
+    align-items: flex-end;
 }
 .message-header {
     font-weight: bold;
@@ -87,31 +78,6 @@ body {
     font-style: italic;
     color: #444;
     font-size: 1rem;
-}
-/* Responses */
-.responses-list {
-    margin-top: 10px;
-}
-.response-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 0.98rem;
-}
-.response-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 8px;
-}
-.response-dot.audio {
-    background: #5e9cff;
-}
-.response-dot.audio_transcript {
-    background: #a259ff;
 }
 /* Controls */
 .controls-container {
@@ -142,13 +108,4 @@ body {
 }
 .control-btn:hover {
     background: #e0e0e0;
-}
-@media (max-width: 900px) {
-    .main-grid {
-        flex-direction: column;
-        gap: 24px;
-    }
-    .panel {
-        min-width: 0;
-    }
 }

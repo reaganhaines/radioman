@@ -1,4 +1,5 @@
 import express from "express";
+import 'dotenv/config';
 
 const app = express();
 
@@ -21,5 +22,7 @@ app.get("/session", async (req, res) => {
   // Send back the JSON we received from the OpenAI REST API
   res.send(data);
 });
+
+app.use(express.static("public"));
 
 app.listen(3000)
