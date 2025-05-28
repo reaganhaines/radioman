@@ -16,7 +16,19 @@ async function init() {
   const ms = await navigator.mediaDevices.getUserMedia({
     audio: true
   });
-  pc.addTrack(ms.getTracks()[0]);
+  const micTrack = ms.getTracks()[0];
+  pc.addTrack(micTrack);
+
+  const muteBtn = document.querySelector(".control-btn");
+  if (muteBtn) {
+    muteBtn.addEventListener("click", () => {
+      if (micTrack) {
+        micTrack.enabled = !micTrack.enabled;
+        muteBtn.textContent = micTrack.enabled ? "Mute" : "Unmute";
+      }
+    });
+    console.log("Mute button initialized");
+  }
 
   // Set up data channel for sending and receiving events
   const dc = pc.createDataChannel("oai-events");
