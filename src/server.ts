@@ -1,6 +1,9 @@
 import express from "express";
 import 'dotenv/config';
+import OpenAI from "openai";
 
+
+const client = new OpenAI();
 const app = express();
 
 // An endpoint which would work with the client code above - it returns
@@ -21,6 +24,20 @@ app.get("/session", async (req, res) => {
 
   // Send back the JSON we received from the OpenAI REST API
   res.send(data);
+});
+
+app.get("/web", async (req, res) => {
+  const query = req.query.q as string;
+
+  const response = await client.responses.create({
+    model: "gpt-4.1",
+    tools: [ { type: "web_search_preview" } ],
+    input: query
+  });
+
+  // Extract the assistant's reply
+  const web_reply = response.output_text;
+  res.json({ web_reply });
 });
 
 app.use(express.static("public"));

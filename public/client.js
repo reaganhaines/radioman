@@ -38,8 +38,8 @@ function init() {
         }
         // Set up data channel for sending and receiving events
         const dc = pc.createDataChannel("oai-events");
-        dc.addEventListener("message", (e) => {
-            var _a, _b, _c;
+        dc.addEventListener("message", (e) => __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c, _d;
             console.log(e);
             try {
                 const data = JSON.parse(e.data);
@@ -59,12 +59,29 @@ function init() {
                             addMessageToConversation("assistant", transcriptObj.transcript);
                         }
                     }
+                    if (output.type === "function_call" &&
+                        output.name === "web_search" &&
+                        ((_d = output.arguments) === null || _d === void 0 ? void 0 : _d.length)) {
+                        const args = JSON.parse(output.arguments);
+                        const resp = yield fetch(`/web?q=${encodeURIComponent(args.question)}`);
+                        const webResult = yield resp.json();
+                        const reply = {
+                            type: "conversation.item.create",
+                            item: {
+                                type: "function_call_output",
+                                call_id: output.call_id,
+                                output: JSON.stringify(webResult)
+                            }
+                        };
+                        dc.send(JSON.stringify(reply));
+                        dc.send(JSON.stringify({ type: "response.create" }));
+                    }
                 }
             }
             catch (err) {
                 console.error("Failed to parse message:", e.data, err);
             }
-        });
+        }));
         // Helper function to add a message to the conversation list
         function addMessageToConversation(role, text) {
             const list = document.getElementById("conversation-list");
@@ -115,7 +132,21 @@ function init() {
                 },
                 input_audio_transcription: {
                     model: "whisper-1"
-                }
+                },
+                tools: [
+                    {
+                        type: "function",
+                        name: "web_search",
+                        description: "Search the web for information to answer the user's questions.",
+                        parameters: {
+                            type: "object",
+                            properties: {
+                                question: { type: "string" }
+                            },
+                            required: ["question"]
+                        }
+                    }
+                ]
             }
         };
         dc.addEventListener("open", () => {

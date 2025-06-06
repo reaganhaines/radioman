@@ -32,7 +32,7 @@ async function init() {
 
   // Set up data channel for sending and receiving events
   const dc = pc.createDataChannel("oai-events");
-  dc.addEventListener("message", (e) => {
+  dc.addEventListener("message", async (e) => {
     console.log(e);
     try {
       const data = JSON.parse(e.data);
@@ -57,6 +57,25 @@ async function init() {
           if (transcriptObj) {
             addMessageToConversation("assistant", transcriptObj.transcript);
           }
+        }
+        if (
+          output.type === "function_call" &&
+          output.name === "web_search" &&
+          output.arguments?.length
+        ) {
+          const args = JSON.parse(output.arguments);
+          const resp = await fetch(`/web?q=${encodeURIComponent(args.question)}`);
+          const webResult = await resp.json();
+          const reply = {
+            type:"conversation.item.create",
+            item:{
+              type: "function_call_output",
+              call_id: output.call_id,
+              output: JSON.stringify(webResult)
+            }
+          }
+          dc.send(JSON.stringify(reply));
+          dc.send(JSON.stringify({type: "response.create"}));
         }
       }
     } catch (err) {
@@ -122,7 +141,21 @@ async function init() {
       },
       input_audio_transcription: {
         model: "whisper-1"
-      }
+      },
+      tools: [
+        {
+          type: "function",
+          name: "web_search",
+          description: "Search the web for information to answer the user's questions.",
+          parameters: {
+            type: "object",
+            properties: {
+              question: {type: "string"}
+            },
+            required: ["question"]
+          }
+        }
+      ]
     }
   }
   dc.addEventListener("open", () => {
