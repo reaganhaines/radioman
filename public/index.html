@@ -13,20 +13,35 @@
             <div class="panel">
                 <div class="panel-title">Conversation</div>
                 <div class="conversation-list" id="conversation-list">
-                <!-- Messages will be appended here -->
+                    <div class="message user">
+                        <div class="message-header">User's message</div>
+                        <div class="message-text">So, Chad, what's happening in L.A. right now?</div>
+                    </div>
+                    <div class="message assistant">
+                        <div class="message-header">Assistant's message</div>
+                        <div class="message-text">Well, I hear the traffic's still terrible and the celebrities are still fabulous. Probably some new movie premieres and folks trying to get a glimpse of their favorite stars. LA's always got something glamorous or bizarre going on.</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div id="token-limit-bar" class="token-limit-bar">
-        <div class="token-limit-bar-inner" id="token-limit-bar-inner"></div>
-        <span class="token-limit-label" id="token-limit-label"></span>
-    </div>
     <!-- Controls at the bottom center -->
     <div class="controls-container">
+        <div class="token-limit">
+            <div class="token-limit-bar">
+                <div class="token-limit-bar-inner"></div>
+            </div>
+            <div class="token-limit-text">Tokens: <span id="token-count">24000</span> / 40000</div>
+        </div>
         <div class="controls">
             <button class="control-btn">Mute</button>
             <button class="control-btn">Stop</button>
+        </div>
+        <div class="volume-bar-container">
+            <div class="volume-bar-text">Volume</div>
+            <div class="volume-bar">
+                <div class="volume-bar-inner"></div>
+            </div>
         </div>
     </div>
     <script src="client.js"></script>
