@@ -28,6 +28,7 @@ app.get("/session", async (req, res) => {
 
 app.get("/web", async (req, res) => {
   const query = req.query.q as string;
+  console.log(query)
 
   const response = await client.responses.create({
     model: "gpt-4.1",
@@ -37,6 +38,7 @@ app.get("/web", async (req, res) => {
 
   // Extract the assistant's reply
   const web_reply = response.output_text;
+  console.log(web_reply)
   res.json({ web_reply });
 });
 

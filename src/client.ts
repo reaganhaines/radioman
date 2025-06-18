@@ -19,16 +19,26 @@ async function init() {
   const micTrack = ms.getTracks()[0];
   pc.addTrack(micTrack);
 
-  const muteBtn = document.querySelector(".control-btn");
-  if (muteBtn) {
-    muteBtn.addEventListener("click", () => {
-      if (micTrack) {
-        micTrack.enabled = !micTrack.enabled;
-        muteBtn.textContent = micTrack.enabled ? "Mute" : "Unmute";
-      }
-    });
-    console.log("Mute button initialized");
+  const muteBtn = document.getElementById("mute-btn");
+  if (!muteBtn) {
+    console.error("Mute button not found");
+    return;
   }
+  muteBtn.addEventListener("click", () => {
+    micTrack.enabled = !micTrack.enabled;
+    const icon = muteBtn.querySelector("i");
+    if (!icon) {
+      console.error("Mute button icon not found");
+      return;
+    }
+    if (micTrack.enabled) {
+      icon.className = "fa-solid fa-microphone";
+      muteBtn.setAttribute("tooltip", "Mute");
+    } else {
+      icon.className = "fa-solid fa-microphone-slash";
+      muteBtn.setAttribute("tooltip", "Unmute")
+    }
+  });
 
   // Set up data channel for sending and receiving events
   const dc = pc.createDataChannel("oai-events");
@@ -76,6 +86,20 @@ async function init() {
           }
           dc.send(JSON.stringify(reply));
           dc.send(JSON.stringify({type: "response.create"}));
+        }
+      }
+
+      if (data.type === "rate_limits.updated") {
+        const tokensLimit = data.rate_limits.find((rl: any) => rl.name === "tokens");
+        if (tokensLimit) {
+          const tokenText = document.getElementById("token-limit-text");
+          if(tokenText) {
+            tokenText.textContent = `Tokens Remaining: ${tokensLimit.remaining} / ${tokensLimit.limit}`;
+          }
+          const tokenBar = document.getElementById("token-limit-bar");
+          if(tokenBar){
+            tokenBar.style.width = tokensLimit.remaining * 100 / tokensLimit.limit + "%";
+          }
         }
       }
     } catch (err) {

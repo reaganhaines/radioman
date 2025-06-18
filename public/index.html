@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>Session</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -13,14 +14,6 @@
             <div class="panel">
                 <div class="panel-title">Conversation</div>
                 <div class="conversation-list" id="conversation-list">
-                    <div class="message user">
-                        <div class="message-header">User's message</div>
-                        <div class="message-text">So, Chad, what's happening in L.A. right now?</div>
-                    </div>
-                    <div class="message assistant">
-                        <div class="message-header">Assistant's message</div>
-                        <div class="message-text">Well, I hear the traffic's still terrible and the celebrities are still fabulous. Probably some new movie premieres and folks trying to get a glimpse of their favorite stars. LA's always got something glamorous or bizarre going on.</div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -29,19 +22,23 @@
     <div class="controls-container">
         <div class="token-limit">
             <div class="token-limit-bar">
-                <div class="token-limit-bar-inner"></div>
+                <div class="token-limit-bar-inner" id="token-limit-bar"></div>
             </div>
-            <div class="token-limit-text">Tokens: <span id="token-count">24000</span> / 40000</div>
+            <div class="token-limit-text" id="token-limit-text">---</div>
         </div>
         <div class="controls">
-            <button class="control-btn">Mute</button>
-            <button class="control-btn">Stop</button>
+            <button class="control-btn" id="mute-btn" tooltip="Mute">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
+            <button class="control-btn" id="stop-btn" tooltip="Stop">
+                <i class="fa-solid fa-stop"></i>
+            </button>
         </div>
         <div class="volume-bar-container">
-            <div class="volume-bar-text">Volume</div>
-            <div class="volume-bar">
-                <div class="volume-bar-inner"></div>
+            <div class="volume-bar-text">
+                <i class="fa-solid fa-volume-high"></i>
             </div>
+            <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="50">
         </div>
     </div>
     <script src="client.js"></script>
