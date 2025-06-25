@@ -4,6 +4,17 @@ OpenAI GPT 4o realtime model instructed to be a radio sidekick
 
 Features a simplified frontend documenting the conversation history
 
+### Features
+- Real-time websearch using expressjs backend with gpt-4o
+- Voice selection
+- Token monitoring
+- Volume selection
+- Mute/Unmute microphone
+- History of the current conversation
+
+### Coming Next
+- Cloud hosting and web access
+
 ### Local use
 - Clone repo
 - Download node and typescript
