@@ -45,8 +45,11 @@ app.get("/web", async (req, res) => {
 
 app.use(express.static("public"));
 app.use(basicAuth({
-  users: { `${process.env.BASIC_AUTH_USER}`: `${process.env.BASIC_AUTH_PASSWORD}` },
+  users: {
+    [process.env.BASIC_AUTH_USER!]: process.env.BASIC_AUTH_PASSWORD!
+  },
   challenge: true
 }));
+
 
 app.listen(3000)
