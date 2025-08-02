@@ -1,6 +1,7 @@
 import express from "express";
 import 'dotenv/config';
 import OpenAI from "openai";
+import basicAuth from "express-basic-auth";
 
 
 const client = new OpenAI();
@@ -43,5 +44,9 @@ app.get("/web", async (req, res) => {
 });
 
 app.use(express.static("public"));
+app.use(basicAuth({
+  users: { `${process.env.BASIC_AUTH_USER}`: `${process.env.BASIC_AUTH_PASSWORD}` },
+  challenge: true
+}));
 
 app.listen(3000)
