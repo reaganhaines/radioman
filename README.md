@@ -13,7 +13,7 @@ Features a simplified frontend documenting the conversation history
 - History of the current conversation
 
 ### Coming Next
-- Cloud hosting and web access
+- Cloud hosting and web access with auth
 
 ### Local use
 - Clone repo
