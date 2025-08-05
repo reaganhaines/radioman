@@ -1,10 +1,24 @@
 import express from "express";
 import 'dotenv/config';
 import OpenAI from "openai";
+import basicAuth from "express-basic-auth";
 
 
 const client = new OpenAI();
 const app = express();
+
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
+
+app.use(basicAuth({
+  users: {
+    [process.env.BASIC_AUTH_USER!]: process.env.BASIC_AUTH_PASSWORD!
+  },
+  challenge: true
+}));
+
 
 // An endpoint which would work with the client code above - it returns
 // the contents of a REST API request to this protected endpoint
@@ -44,4 +58,7 @@ app.get("/web", async (req, res) => {
 
 app.use(express.static("public"));
 
-app.listen(3000)
+app.listen(3000, '0.0.0.0', () => {
+  console.log('Server listening on port 3000');
+});
+
