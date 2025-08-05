@@ -46,28 +46,25 @@ async function init() {
     console.log(e);
     try {
       const data = JSON.parse(e.data);
-
-      // Handle user transcript
-      if (data.type === "conversation.item.input_audio_transcription.completed") {
-        addMessageToConversation("user", data.transcript);
+      
+      if(data.type === "input_audio_buffer.speech_started") {
+        //TODO: Give feedback to user
       }
 
-      // Handle assistant response
-      if (data.type === "response.done" && data.response?.output?.length) {
-        const output = data.response.output[0];
-        if (
-          output.type === "message" &&
-          output.role === "assistant" &&
-          output.content?.length
-        ) {
-          // Find the transcript in the content array
-          const transcriptObj = output.content.find(
-            (c: any) => c.type === "audio" && c.transcript
-          );
-          if (transcriptObj) {
-            addMessageToConversation("assistant", transcriptObj.transcript);
-          }
-        }
+      if(data.type === "conversation.item.created" && data.item.type === "message") {
+        insertMessage(data)
+      }
+
+      if(data.type === "conversation.item.input_audio_transcription.completed") {
+        updateMessage(data.item_id, data.transcript)
+      }
+
+      if(data.type === "response.audio_transcript.delta") { 
+        updateMessage(data.item_id, data.delta)
+      }
+
+      if (data.type === "response.done") {
+        const output = data.response.output[0]
         if (
           output.type === "function_call" &&
           output.name === "web_search" &&
@@ -88,6 +85,7 @@ async function init() {
           dc.send(JSON.stringify({type: "response.create"}));
         }
       }
+      
 
       if (data.type === "rate_limits.updated") {
         const tokensLimit = data.rate_limits.find((rl: any) => rl.name === "tokens");
@@ -107,28 +105,56 @@ async function init() {
     }
   });
 
-  // Helper function to add a message to the conversation list
-  function addMessageToConversation(role: "user" | "assistant", text: string) {
+  interface conversationMessage {
+    type: string;
+    event_id: string;
+    previous_item_id: string | null;
+    item: {
+      id: string;
+      object: string;
+      type: string;
+      status: string;
+      role: "user" | "assistant";
+      content: [{
+          type: string;
+          transcript: string | null;
+        }
+      ];
+    }
+  }
+
+  function insertMessage(data: conversationMessage){
     const list = document.getElementById("conversation-list");
-    if (!list) return;
-
     const msgDiv = document.createElement("div");
-    msgDiv.className = `message ${role}`;
-
+    msgDiv.className = `message ${data.item.role}`;
+    msgDiv.id = data.item.id;
+    
     const header = document.createElement("div");
     header.className = "message-header";
-    header.textContent = role === "user" ? "User's message" : "Assistant's message";
+    header.textContent = data.item.role === "user" ? "User's message" : "Assistant's message";
 
     const textDiv = document.createElement("div");
     textDiv.className = "message-text";
-    textDiv.textContent = text;
+
+    const loadingSpan = document.createElement("span");
+    loadingSpan.className = "ellipsis-loader";
 
     msgDiv.appendChild(header);
     msgDiv.appendChild(textDiv);
-    list.appendChild(msgDiv);
+    textDiv.appendChild(loadingSpan);
+    list?.appendChild(msgDiv);
+  }
 
-    // Optionally scroll to bottom
-    list.scrollTop = list.scrollHeight;
+  function updateMessage(item_id: string, delta: string | undefined) {
+    const msgDiv = document.getElementById(item_id);
+    if(!msgDiv) return;
+    const textDiv = msgDiv.querySelector(".message-text");
+    if(!textDiv) return;
+
+    const loader = textDiv.querySelector(".ellipsis-loader");
+    if(loader) loader.remove();
+
+    textDiv.textContent = (textDiv.textContent ?? "") + (delta ?? "");
   }
 
   // Start the session using the Session Description Protocol (SDP)

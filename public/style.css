@@ -216,3 +216,13 @@ body {
     outline: none;
     box-shadow: 0 0 0 2px #8a0000;
 }
+.ellipsis-loader::after {
+  content: '...';
+  animation: ellipsis-anim 1s steps(4, end) infinite;
+}
+
+@keyframes ellipsis-anim {
+  to {
+    width: 1.5em;
+  }
+}

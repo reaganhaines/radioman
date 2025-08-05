@@ -50,29 +50,27 @@ function init() {
         // Set up data channel for sending and receiving events
         const dc = pc.createDataChannel("oai-events");
         dc.addEventListener("message", (e) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d;
+            var _a;
             console.log(e);
             try {
                 const data = JSON.parse(e.data);
-                // Handle user transcript
-                if (data.type === "conversation.item.input_audio_transcription.completed") {
-                    addMessageToConversation("user", data.transcript);
+                if (data.type === "input_audio_buffer.speech_started") {
+                    //TODO: Give feedback to user
                 }
-                // Handle assistant response
-                if (data.type === "response.done" && ((_b = (_a = data.response) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.length)) {
+                if (data.type === "conversation.item.created" && data.item.type === "message") {
+                    insertMessage(data);
+                }
+                if (data.type === "conversation.item.input_audio_transcription.completed") {
+                    updateMessage(data.item_id, data.transcript);
+                }
+                if (data.type === "response.audio_transcript.delta") {
+                    updateMessage(data.item_id, data.delta);
+                }
+                if (data.type === "response.done") {
                     const output = data.response.output[0];
-                    if (output.type === "message" &&
-                        output.role === "assistant" &&
-                        ((_c = output.content) === null || _c === void 0 ? void 0 : _c.length)) {
-                        // Find the transcript in the content array
-                        const transcriptObj = output.content.find((c) => c.type === "audio" && c.transcript);
-                        if (transcriptObj) {
-                            addMessageToConversation("assistant", transcriptObj.transcript);
-                        }
-                    }
                     if (output.type === "function_call" &&
                         output.name === "web_search" &&
-                        ((_d = output.arguments) === null || _d === void 0 ? void 0 : _d.length)) {
+                        ((_a = output.arguments) === null || _a === void 0 ? void 0 : _a.length)) {
                         const args = JSON.parse(output.arguments);
                         const resp = yield fetch(`/web?q=${encodeURIComponent(args.question)}`);
                         const webResult = yield resp.json();
@@ -88,6 +86,28 @@ function init() {
                         dc.send(JSON.stringify({ type: "response.create" }));
                     }
                 }
+                // // Handle user transcript
+                // if (data.type === "conversation.item.input_audio_transcription.completed") {
+                //   addMessageToConversation("user", data.transcript);
+                // }
+                // // Handle assistant response
+                // if (data.type === "response.done" && data.response?.output?.length) {
+                //   const output = data.response.output[0];
+                //   if (
+                //     output.type === "message" &&
+                //     output.role === "assistant" &&
+                //     output.content?.length
+                //   ) {
+                //     // Find the transcript in the content array
+                //     const transcriptObj = output.content.find(
+                //       (c: any) => c.type === "audio" && c.transcript
+                //     );
+                //     if (transcriptObj) {
+                //       addMessageToConversation("assistant", transcriptObj.transcript);
+                //     }
+                //   }
+                //   
+                // }
                 if (data.type === "rate_limits.updated") {
                     const tokensLimit = data.rate_limits.find((rl) => rl.name === "tokens");
                     if (tokensLimit) {
@@ -106,25 +126,54 @@ function init() {
                 console.error("Failed to parse message:", e.data, err);
             }
         }));
-        // Helper function to add a message to the conversation list
-        function addMessageToConversation(role, text) {
+        function insertMessage(data) {
             const list = document.getElementById("conversation-list");
-            if (!list)
-                return;
             const msgDiv = document.createElement("div");
-            msgDiv.className = `message ${role}`;
+            msgDiv.className = `message ${data.item.role}`;
+            msgDiv.id = data.item.id;
             const header = document.createElement("div");
             header.className = "message-header";
-            header.textContent = role === "user" ? "User's message" : "Assistant's message";
+            header.textContent = data.item.role === "user" ? "User's message" : "Assistant's message";
             const textDiv = document.createElement("div");
             textDiv.className = "message-text";
-            textDiv.textContent = text;
+            const loadingSpan = document.createElement("span");
+            loadingSpan.className = "ellipsis-loader";
             msgDiv.appendChild(header);
             msgDiv.appendChild(textDiv);
-            list.appendChild(msgDiv);
-            // Optionally scroll to bottom
-            list.scrollTop = list.scrollHeight;
+            textDiv.appendChild(loadingSpan);
+            list === null || list === void 0 ? void 0 : list.appendChild(msgDiv);
         }
+        function updateMessage(item_id, delta) {
+            var _a;
+            const msgDiv = document.getElementById(item_id);
+            if (!msgDiv)
+                return;
+            const textDiv = msgDiv.querySelector(".message-text");
+            if (!textDiv)
+                return;
+            const loader = textDiv.querySelector(".ellipsis-loader");
+            if (loader)
+                loader.remove();
+            textDiv.textContent = ((_a = textDiv.textContent) !== null && _a !== void 0 ? _a : "") + (delta !== null && delta !== void 0 ? delta : "");
+        }
+        // // Helper function to add a message to the conversation list
+        // function addMessageToConversation(role: "user" | "assistant", text: string) {
+        //   const list = document.getElementById("conversation-list");
+        //   if (!list) return;
+        //   const msgDiv = document.createElement("div");
+        //   msgDiv.className = `message ${role}`;
+        //   const header = document.createElement("div");
+        //   header.className = "message-header";
+        //   header.textContent = role === "user" ? "User's message" : "Assistant's message";
+        //   const textDiv = document.createElement("div");
+        //   textDiv.className = "message-text";
+        //   textDiv.textContent = text;
+        //   msgDiv.appendChild(header);
+        //   msgDiv.appendChild(textDiv);
+        //   list.appendChild(msgDiv);
+        //   // Optionally scroll to bottom
+        //   list.scrollTop = list.scrollHeight;
+        // }
         // Start the session using the Session Description Protocol (SDP)
         const offer = yield pc.createOffer();
         yield pc.setLocalDescription(offer);
