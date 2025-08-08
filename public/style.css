@@ -226,3 +226,7 @@ body {
     width: 1.5em;
   }
 }
+
+.mic-active {
+  color: #00e676
+}

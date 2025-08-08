@@ -1,14 +1,14 @@
-async function init() {
-  // Get an ephemeral key from your server - see server code below
-  const tokenResponse = await fetch("/session");
-  const data = await tokenResponse.json();
-  const EPHEMERAL_KEY = data.client_secret.value;
+let pc: RTCPeerConnection;
+let dc: RTCDataChannel;
+let micTrack: MediaStreamTrack;
+let audioEl: HTMLAudioElement;
 
-  // Create a peer connection
-  const pc = new RTCPeerConnection();
+async function setUpPC(EPHEMERAL_KEY: string) {
+  console.log("Setting up peer connection...");
+  pc = new RTCPeerConnection();
 
   // Set up to play remote audio from the model
-  const audioEl = document.createElement("audio");
+  audioEl = document.createElement("audio");
   audioEl.autoplay = true;
   pc.ontrack = e => audioEl.srcObject = e.streams[0];
 
@@ -16,29 +16,8 @@ async function init() {
   const ms = await navigator.mediaDevices.getUserMedia({
     audio: true
   });
-  const micTrack = ms.getTracks()[0];
+  micTrack = ms.getTracks()[0];
   pc.addTrack(micTrack);
-
-  const muteBtn = document.getElementById("mute-btn");
-  if (!muteBtn) {
-    console.error("Mute button not found");
-    return;
-  }
-  muteBtn.addEventListener("click", () => {
-    micTrack.enabled = !micTrack.enabled;
-    const icon = muteBtn.querySelector("i");
-    if (!icon) {
-      console.error("Mute button icon not found");
-      return;
-    }
-    if (micTrack.enabled) {
-      icon.className = "fa-solid fa-microphone";
-      muteBtn.setAttribute("tooltip", "Mute");
-    } else {
-      icon.className = "fa-solid fa-microphone-slash";
-      muteBtn.setAttribute("tooltip", "Unmute")
-    }
-  });
 
   // Set up data channel for sending and receiving events
   const dc = pc.createDataChannel("oai-events");
@@ -47,8 +26,20 @@ async function init() {
     try {
       const data = JSON.parse(e.data);
       
-      if(data.type === "input_audio_buffer.speech_started") {
-        //TODO: Give feedback to user
+      if (data.type === "input_audio_buffer.speech_started") {
+        const muteBtn = document.getElementById("mute-btn");
+        if (muteBtn) {
+          const icon = muteBtn.querySelector("i");
+          if (icon) icon.classList.add("mic-active");
+        }
+      }
+
+      if (data.type === "input_audio_buffer.speech_stopped") {
+        const muteBtn = document.getElementById("mute-btn");
+        if (muteBtn) {
+          const icon = muteBtn.querySelector("i");
+          if (icon) icon.classList.remove("mic-active");
+        }
       }
 
       if(data.type === "conversation.item.created" && data.item.type === "message") {
@@ -211,6 +202,113 @@ async function init() {
   dc.addEventListener("open", () => {
     dc.send(JSON.stringify(sessionInit));
   });
+}
+
+async function stopConnection() {
+  if (pc) {
+    pc.ontrack = null;
+    pc.onicecandidate = null;
+    pc.close();
+  }
+  if (micTrack) {
+    micTrack.stop();
+  }
+  if (audioEl) {
+    audioEl.srcObject = null;
+  }
+}
+
+async function init() {
+  // Get an ephemeral key from your server - see server code below
+  const tokenResponse = await fetch("/session");
+  const data = await tokenResponse.json();
+  const EPHEMERAL_KEY = data.client_secret.value;
+
+  await setUpPC(EPHEMERAL_KEY);
+  
+  const volumeSlider = document.getElementById("volume-slider") as HTMLInputElement;
+  const volumeMuteBtn = document.getElementById("volume-mute-btn") as HTMLButtonElement;
+  const volumeIcon = document.getElementById("volume-icon") as HTMLElement;
+  let previousVolume = Number(volumeSlider?.value) || 50;
+
+  if (volumeSlider) {
+    audioEl.volume = Number(volumeSlider.value) / 100;
+    volumeSlider.addEventListener("input", () => {
+      audioEl.volume = Number(volumeSlider.value) / 100;
+      // Update icon based on volume
+      if (Number(volumeSlider.value) === 0) {
+        volumeIcon.classList.remove("fa-volume-high");
+        volumeIcon.classList.add("fa-volume-xmark");
+      } else {
+        volumeIcon.classList.remove("fa-volume-xmark");
+        volumeIcon.classList.add("fa-volume-high");
+        previousVolume = Number(volumeSlider.value);
+      }
+    });
+  }
+
+  if (volumeMuteBtn && volumeSlider) {
+    volumeMuteBtn.addEventListener("click", () => {
+      if (Number(volumeSlider.value) === 0) {
+        // Unmute: restore previous volume
+        volumeSlider.value = previousVolume.toString();
+        audioEl.volume = previousVolume / 100;
+        volumeIcon.classList.remove("fa-volume-xmark");
+        volumeIcon.classList.add("fa-volume-high");
+      } else {
+        // Mute: set to 0
+        previousVolume = Number(volumeSlider.value);
+        volumeSlider.value = "0";
+        audioEl.volume = 0;
+        volumeIcon.classList.remove("fa-volume-high");
+        volumeIcon.classList.add("fa-volume-xmark");
+      }
+    });
+  }
+
+
+  const muteBtn = document.getElementById("mute-btn");
+  if (!muteBtn) {
+    console.error("Mute button not found");
+    return;
+  }
+  muteBtn.addEventListener("click", () => {
+    micTrack.enabled = !micTrack.enabled;
+    const icon = muteBtn.querySelector("i");
+    if (!icon) {
+      console.error("Mute button icon not found");
+      return;
+    }
+    if (micTrack.enabled) {
+      icon.classList.remove("fa-microphone-slash");
+      icon.classList.add("fa-microphone");
+      muteBtn.setAttribute("tooltip", "Mute");
+    } else {
+      icon.classList.remove("fa-microphone");
+      icon.classList.add("fa-microphone-slash");
+      muteBtn.setAttribute("tooltip", "Unmute");
+    }
+  });
+
+  
+  const stopButton = document.getElementById("stop-btn");
+  const startStopIcon = stopButton?.querySelector("i");
+  if(stopButton) {
+    stopButton.addEventListener("click", async () => {
+      if (pc?.connectionState === "connected") {
+        stopConnection();
+        startStopIcon?.classList.replace("fa-stop", "fa-play");
+        console.log("Connection closed by user.");
+      } else {
+        stopConnection(); 
+        await setUpPC(EPHEMERAL_KEY);
+        audioEl.volume = Number(volumeSlider.value) / 100;
+        micTrack.enabled = muteBtn.getAttribute("tooltip") === "Mute";
+        startStopIcon?.classList.replace("fa-play", "fa-stop");
+        console.log("Connection started by user.");
+      }
+    });
+  }
 }
 
 init();
