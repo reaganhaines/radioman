@@ -12,10 +12,7 @@ Features a simplified frontend documenting the conversation history
 - Mute/Unmute microphone
 - History of the current conversation
 
-### Coming Next
-- Cloud hosting and web access with auth
-
-### Local use
+### Local use (old)
 - Clone repo
 - Download node and typescript
 - Run `npm install --production` or `npm install`
@@ -23,3 +20,8 @@ Features a simplified frontend documenting the conversation history
 - Create a .env file in the project root and add your OpenAI API key: `OPENAI_API_KEY=...`
 - Run `node dist/server.js`
 - Go to http://localhost:3000 in your browser
+
+### Browser
+- airchad.randomsmattering.com
+- user: test
+- pass: insertpasswordhere
