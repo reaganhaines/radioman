@@ -134,6 +134,10 @@ async function setUpPC(EPHEMERAL_KEY: string) {
     msgDiv.appendChild(textDiv);
     textDiv.appendChild(loadingSpan);
     list?.appendChild(msgDiv);
+
+    if (list) {
+      list.scrollTop = list.scrollHeight;
+    }
   }
 
   function updateMessage(item_id: string, delta: string | undefined) {
